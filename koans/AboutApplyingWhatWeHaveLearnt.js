@@ -119,26 +119,219 @@ describe("About Applying What We Have Learnt", function() {
 
   /*********************************************************************************/
   /* UNCOMMENT FOR EXTRA CREDIT */
-  /*
+
   it("should find the largest prime factor of a composite number", function () {
-  
-  });
+
+    function getHighestPrime (value) {
+      var primeArr =[];
+
+      function multiples(numb) {
+          var max=Math.ceil(numb/2), i = 2;
+          while (i<=max) {
+              if (numb%i===0) {
+                  return [i,numb/i];
+              } else {
+                i++;
+              }
+          }
+          return numb;
+      }
+
+      function recursion (item) {
+          var multResults = multiples(item);
+          if (typeof multResults !== 'number') {
+              primeArr.push(multResults[0]);
+              recursion (multResults[1]);
+          } else {
+              if (multResults !== value) {
+                  primeArr.push(multResults);
+              }
+          }
+      }
+      recursion (value);
+
+      return primeArr.length===0 ? 'value is prime' : primeArr[primeArr.length-1];
+    }
+
+  expect(getHighestPrime(62)).toBe(31);
+    });
 
   it("should find the largest palindrome made from the product of two 3 digit numbers", function () {
-    
+    function largestPalinDrome (a,b) {
+                
+      function isPalindrome(str) {
+          for (var k= 0; k< str.length/2; k++) {
+              if (str.slice(k,k+1) != str.slice(-1-k, str.length-k)) {
+                  return false;
+              }
+          }
+        return true;
+      }
+
+      for (var i=a;i>0;i--){
+          for (var j=b;j>0;j--){
+              var value = (i*j).toString();
+              var result = isPalindrome (value);
+              if (result === true) {return Number(value);}
+          }
+      }
+      return "no match";
+    }
+
+        expect(largestPalinDrome(999,999)).toBe(90909);
+;
   });
 
   it("should find the smallest number divisible by each of the numbers 1 to 20", function () {
-      
-    
+  
+    function lowestCommonMultiple (rangeEnd) {
+        var globalPrimesObj = {}, accum =1;
+
+        function getPrimeFactors (value) {
+          var primesObj ={};
+
+          function multiples(numb) {
+              var max=Math.ceil(numb/2), i = 2;
+              while (i<=max) {
+                  if (numb%i===0) {
+                      return [i,numb/i];
+                  } else {
+                    i++;
+                  }
+              }
+              return numb;
+          }
+
+          function recursion (item) {
+              var multResults = multiples(item);
+              if (Array.isArray(multResults)) {
+                  primesObj[multResults[0]] = (primesObj[multResults[0]] ||0) +1;
+                  recursion (multResults[1]);
+              } else {
+                 primesObj[multResults] = (primesObj[multResults] || 0) +1;
+              }
+          }
+          
+          recursion (value);
+          return primesObj;
+        }
+        for (var j=2;j<=rangeEnd;j++) {
+            var primes = getPrimeFactors (j);
+            for (key in primes) {
+                if (!globalPrimesObj[key]) {
+                  globalPrimesObj[key] = primes[key];
+                } else if (globalPrimesObj[key] < primes[key]) {
+                  globalPrimesObj[key] = primes[key];
+                }
+            }
+        }
+        for (key in globalPrimesObj) {
+          if (typeof globalPrimesObj[key] === 'number'){
+            accum*= Math.pow(key,globalPrimesObj[key]);
+          }
+        }
+        return accum;
+    }
+
+    expect(lowestCommonMultiple(20)).toBe(232792560);
   });
 
+
   it("should find the difference between the sum of the squares and the square of the sums", function () {
-    
+    function squaresDiff(item) {
+      var result, squaresArr=[], valuesArr=[];
+      debugger;
+      for (var i=1;i<=item;i++) {
+        valuesArr.push(i);
+        squaresArr.push(i*i);
+      }
+
+      var sumSquares = _.reduce(squaresArr, function(memo,value){return memo+=value;});
+      var sumValues = _.reduce(valuesArr, function(memo,value){return memo+=value;});
+      return  Math.pow(sumValues,2)-sumSquares;
+    }
+    expect(squaresDiff (10)).toBe(2640);
+
   });
+
 
   it("should find the 10001st prime", function () {
 
+    function getPrimes (noOfPrimes) {
+        var primeArr = [2];
+        
+        function checkForPrime(n) {
+            var max=Math.sqrt(n);
+            var div = 2;
+            while (div<=max) {
+                if (n%div===0) {
+                  return false;
+                } else {
+                  div++;
+                }
+            }
+            return true;
+        }
+        
+        for (var n=3; primeArr.length<noOfPrimes; n++) {
+            var result = checkForPrime(n);
+            if (result) {
+              primeArr.push(n);
+            }
+        }
+        return primeArr[noOfPrimes-1];
+    }
+
+    expect(getPrimes (10001)).toBe(104743);
+
   });
-  */
+
 });
+
+/*****************************************************************/
+/*  
+    function getHighestFactor (numb) {
+
+      function getPrimes (maxValue) {
+          var primeArr = [2];
+      
+          function checkIfPrime(testValue) {
+              var divider = 2;
+              
+              while (divider<testValue) {
+                  if (testValue%divider==0) {return false}
+                  else {divider++}
+              }
+              return true
+          }
+      
+          var testValue=3;
+          while (testValue<maxValue) {
+              var result = checkIfPrime(testValue);
+              if (result) {primeArr.push(testValue)}
+              testValue++;
+          }
+          return primeArr;
+      } 
+
+      if (numb > 2 & numb%1==0) {
+          if (Math.sqrt(numb)%1==0) {return Math.sqrt(numb)}
+          else {
+              var max=Math.ceil(numb/2);
+
+              var primes= getPrimes(max);
+          
+              var i=primes.length-1;
+              while (i>=0) {
+                  if (numb%primes[i]==0) {
+                      return primes[i];
+                  } else {
+                      i--
+                  }
+              }
+          }
+          return "value is prime";
+      }
+      return "not valid input"
+    }
+*/
