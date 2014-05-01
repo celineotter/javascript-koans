@@ -112,8 +112,6 @@ describe("About Applying What We Have Learnt", function() {
         .flatten()
         .reduce(function (ingredientsObj, ingredient) {
           ingredientsObj[ingredient] = (ingredientsObj[ingredient] || 0) +1;
-          // or=> // ingredientsObj[ingredient] ? 
-                  //ingredientsObj[ingredient] +=1: ingredientsObj[ingredient]=1;
           return ingredientsObj;
         }, {})
         .value();
@@ -127,21 +125,14 @@ describe("About Applying What We Have Learnt", function() {
   it("should find the largest prime factor of a composite number", function () {
 
     function getHighestPrime (value) {
-
-      function screenMultiples(numb) {
-        var max = Math.ceil(numb / 2);
-        for (var divisor = 2; divisor <= max; divisor++) {
-            if (numb % divisor === 0) return [numb / divisor];
-        }
-        return numb;
-      }
-
       function largestFactorId (item) {
-          var result = screenMultiples(item);
-          if (Array.isArray(result)) return largestFactorId (result[0]);
-          else return (result !== value ? result : 'value is prime');
-      }
+        var result = _.reduce( _.range (2, Math.ceil(item/2), 1), function (memo, divisor) {
+          return (memo === item && (item % divisor === 0) ? item/divisor : memo);
+        }, item);
 
+        if (result !== item) return largestFactorId(result);
+        else return (result !== value ? result : 'value is prime');
+      }
       return largestFactorId (value);
     }
 
@@ -153,7 +144,7 @@ describe("About Applying What We Have Learnt", function() {
   it("should find the largest palindrome made from the product of two 3 digit numbers", function () {
     function largestPalinDrome (a, b) {
                 
-      function isPalindrome(str) {
+      function palindromeTest(str) {
         var halfLength = str.length/2;
         var compareStr = str.slice(0, Math.ceil(halfLength));
         compareStr = compareStr.split('').reverse().join('');
@@ -163,7 +154,7 @@ describe("About Applying What We Have Learnt", function() {
       for (; a>0; a--) {
         for (; b>0; b--) {
           var value = (a * b);
-          if (isPalindrome (value.toString())) return Number(value);
+          if (palindromeTest(value.toString())) return Number(value);
         }
       }
 
@@ -177,43 +168,35 @@ describe("About Applying What We Have Learnt", function() {
   it("should find the smallest number divisible by each of the numbers 1 to 20", function () {
   
     function lowestCommonMultiple (rangeEnd) {
-      var mutualFactors = {}, accum =1;
+        function getPrimeFactors (value) {
+            var primesObj = {};
 
-      function getPrimeFactors (value) {
-        var primesObj = {};
-
-        function screenMultiples(numb) {
-          var max = Math.ceil(numb / 2), divisor = 2;
-          for (; divisor <= max; divisor++) {
-            if (numb % divisor === 0) return [divisor, numb / divisor];
-          }
-          return numb;
+            function FactorsId (item) {
+                var multResults = _.reduce(_.range (2, Math.ceil(item/2), 1), function (memo, divisor) {
+                    return (memo === item && item % divisor === 0 ? [divisor, item/divisor] : memo);
+                }, item);
+                if (Array.isArray(multResults)) {
+                    primesObj[multResults[0]] = (primesObj[multResults[0]] || 0) +1;
+                    FactorsId (multResults[1]);
+                } else {
+                    primesObj[multResults] = (primesObj[multResults] || 0) +1;
+                }
+            }
+            FactorsId (value);
+            return primesObj;
         }
 
-        function FactorsId (item) {
-          var multResults = screenMultiples(item);
+        mutualFactors = _.reduce(_.range(2, rangeEnd, 1), function (memo, index) {
+            var primesObj = getPrimeFactors(index);
+            _.each(Object.keys(primesObj), function (key) {
+                memo[key] = (!memo[key] || (memo[key] < primesObj[key]) ? primesObj[key] : memo[key]);
+            })
+            return memo;
+        }, {});
 
-          if (Array.isArray(multResults)) {
-            primesObj[multResults[0]] = (primesObj[multResults[0]] || 0) +1;
-            FactorsId (multResults[1]);
-          } else {
-            primesObj[multResults] = (primesObj[multResults] || 0) +1;
-          }
-        }
-        FactorsId (value);
-        return primesObj;
-      }
-
-      for (var i = 2; i <= rangeEnd; i++) {
-        var primes = getPrimeFactors (i);
-        _.each(Object.keys(primes), function (key) {
-            mutualFactors[key] = (mutualFactors[key] < primes[key] ? primes[key] : mutualFactors[key]) || primes[key];
-        });
-      }
-
-      return _.reduce (Object.keys(mutualFactors), function (memo, key) {
-        return memo *= Math.pow(key,mutualFactors[key]);
-      }, 1);
+        return _.reduce (Object.keys(mutualFactors), function (memo, key) {
+            return memo *= Math.pow(key,mutualFactors[key]);
+        }, 1);
     }
 
     expect(lowestCommonMultiple(20)).toBe(232792560);
@@ -228,7 +211,7 @@ describe("About Applying What We Have Learnt", function() {
       function reduceFunc (selectedArr) {
         return _.reduce(selectedArr, function(memo,value) {
           return memo += value;
-        });
+        }, 0);
       }
 
       rawArray = _.range(1, focusValue+1, 1);
@@ -236,7 +219,7 @@ describe("About Applying What We Have Learnt", function() {
         return Math.pow(value,2);
       });
 
-      return  Math.pow(reduceFunc (rawArray),2) - reduceFunc (squaresArr);
+      return  Math.pow(reduceFunc(rawArray), 2) - reduceFunc(squaresArr);
     }
 
     expect(squaresDiff (10)).toBe(2640);
@@ -246,21 +229,19 @@ describe("About Applying What We Have Learnt", function() {
   it("should find the 10001st prime", function () {
 
     function getPrimes (noOfPrimes) {
-      var primeArr = [2];
-      
-      function checkForPrime(n) {
-          for (var div = 2; div <= Math.sqrt(n); ) {
-              if (n%div === 0) return false;
-              else div++;
-          }
-          return true;
-      }
-      
-      for (var n=3; primeArr.length < noOfPrimes; n++) {
-        if (checkForPrime(n)) primeArr.push(n);
+      var primeIndex = 1, lastResult = 2;
+
+      for (var n=3; primeIndex < noOfPrimes; n++) { 
+        var isPrime = _.every(_.range(2, Math.ceil(Math.sqrt(n)+1), 1), function (divider) {
+          return (n%divider !== 0);
+        });
+        if (isPrime) {
+          primeIndex++;
+          lastResult = n;
+        }
       }
 
-      return primeArr[noOfPrimes-1];
+      return lastResult;
     }
 
     expect(getPrimes (10001)).toBe(104743);
